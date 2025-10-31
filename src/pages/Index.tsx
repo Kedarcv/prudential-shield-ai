@@ -4,6 +4,7 @@ import { AIInsightCard } from "@/components/AIInsightCard";
 import { ComplianceTracker } from "@/components/ComplianceTracker";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+
 import {
   Activity,
   Shield,

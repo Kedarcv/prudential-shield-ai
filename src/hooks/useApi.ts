@@ -230,27 +230,34 @@ export function useAlertActions() {
 
 // Authentication hooks
 export function useAuth() {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    // Initialize auth state on mount
+  const [user, setUser] = useState<any>(() => {
+    // Initialize user state from localStorage immediately
     const token = localStorage.getItem('auth_token');
     const userData = localStorage.getItem('user_data');
     
     if (token && userData) {
       try {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
-        setIsAuthenticated(true);
+        return JSON.parse(userData);
       } catch (error) {
         console.error('Error parsing user data:', error);
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user_data');
+        return null;
       }
     }
-  }, []);
+    return null;
+  });
+  
+  const [loading, setLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    // Initialize authentication state immediately
+    const token = localStorage.getItem('auth_token');
+    const userData = localStorage.getItem('user_data');
+    return !!(token && userData);
+  });
+
+  // Remove the useEffect that was causing re-renders
+  // State is now initialized synchronously above
 
   const login = async (email: string, password: string) => {
     setLoading(true);

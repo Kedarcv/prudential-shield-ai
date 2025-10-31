@@ -33,11 +33,14 @@ const UserManagement = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
 
-  const { data: users, loading: usersLoading } = useUsers({
+  const { data: usersData, loading: usersLoading } = useUsers({
     search: searchTerm,
     role: roleFilter !== 'all' ? roleFilter : undefined,
     status: statusFilter !== 'all' ? statusFilter : undefined
   });
+
+  // Extract users array from the response data
+  const users = usersData?.users || [];
 
   const { createUser, updateUser, deleteUser, updateUserStatus } = useUserActions();
 
@@ -66,6 +69,8 @@ const UserManagement = () => {
         title: "Status Updated",
         description: `User has been ${newStatus === 'active' ? 'activated' : 'deactivated'}.`,
       });
+      // Refresh the users list after status update
+      window.location.reload();
     } catch (error) {
       toast({
         title: "Error",
@@ -115,7 +120,7 @@ const UserManagement = () => {
 
           <TabsContent value="users" className="space-y-6">
             <UsersTab 
-              users={users || []}
+              users={users}
               loading={usersLoading}
               searchTerm={searchTerm}
               roleFilter={roleFilter}
@@ -241,49 +246,58 @@ const UsersTab = ({
                     <TableCell>Loading...</TableCell>
                   </TableRow>
                 ))
+              ) : users && users.length > 0 ? (
+                users.map((user: any) => {
+                  const userStatus = user.isActive ? 'active' : 'inactive';
+                  return (
+                    <TableRow key={user._id}>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{user.firstName} {user.lastName}</p>
+                          <p className="text-sm text-muted-foreground">{user.email}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{user.role}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={userStatus === 'active' ? 'default' : 'secondary'}>
+                          {userStatus === 'active' ? (
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                          ) : (
+                            <XCircle className="w-3 h-3 mr-1" />
+                          )}
+                          {userStatus}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm">
+                          {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm">
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => onToggleUserStatus(user._id, userStatus)}
+                          >
+                            {userStatus === 'active' ? 'Deactivate' : 'Activate'}
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               ) : (
-                users.map((user: any) => (
-                  <TableRow key={user._id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{user.firstName} {user.lastName}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{user.role}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
-                        {user.status === 'active' ? (
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                        ) : (
-                          <XCircle className="w-3 h-3 mr-1" />
-                        )}
-                        {user.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm">
-                        {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => onToggleUserStatus(user._id, user.status)}
-                        >
-                          {user.status === 'active' ? 'Deactivate' : 'Activate'}
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                    No users found
+                  </TableCell>
+                </TableRow>
               )}
             </TableBody>
           </Table>
