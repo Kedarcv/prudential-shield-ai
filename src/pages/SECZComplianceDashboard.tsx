@@ -86,7 +86,8 @@ const SECZComplianceDashboard: React.FC = () => {
     try {
       setRefreshing(true);
       // Try to fetch from API
-      const response = await fetch('/api/compliance/secz-dashboard');
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+      const response = await fetch(`${baseUrl}/compliance/secz-dashboard`);
       if (response.ok) {
         const result = await response.json();
         setMetrics(result.data);
@@ -117,7 +118,15 @@ const SECZComplianceDashboard: React.FC = () => {
           }
         },
         recentActivity: {
-          sars: seczDashboardConfig.fallbackActivity.sars,
+          sars: seczDashboardConfig.fallbackActivity.sars.map(sar => ({
+            sarId: sar.sarId,
+            reportType: sar.reportType,
+            customerName: sar.customerName,
+            suspiciousActivity: {
+              description: `${sar.reportType} - Amount: $${sar.amountInvolved.toLocaleString()}`
+            },
+            status: sar.status
+          })),
           ctrs: seczDashboardConfig.fallbackActivity.ctrs.map(ctr => ({
             ctrId: ctr.ctrId,
             customer: { name: ctr.customerName },

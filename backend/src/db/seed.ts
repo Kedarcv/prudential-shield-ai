@@ -539,7 +539,7 @@ async function seedDatabase() {
         triggeredAt: moment().subtract(1, 'day').toDate(),
         status: 'acknowledged',
         acknowledgedAt: moment().subtract(12, 'hours').toDate(),
-        acknowledgedBy: users[1]._id.toString(),
+        acknowledgedBy: (users[1]._id as any).toString(),
         actions: [
           'Review credit facility terms',
           'Request updated financials',
@@ -557,7 +557,7 @@ async function seedDatabase() {
         triggeredAt: moment().subtract(3, 'days').toDate(),
         status: 'resolved',
         resolvedAt: moment().subtract(1, 'day').toDate(),
-        acknowledgedBy: users[3]._id.toString(),
+        acknowledgedBy: (users[3]._id as any).toString(),
         actions: [
           'Complete capital adequacy calculation',
           'Update regulatory reporting',

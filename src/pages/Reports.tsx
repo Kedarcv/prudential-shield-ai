@@ -16,7 +16,6 @@ import {
   TrendingUp,
   Building,
   FileSpreadsheet,
-  FilePdf,
   Eye,
   Clock,
   Filter
@@ -284,7 +283,7 @@ const Reports = () => {
                       <div key={report.id} className="p-6 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                           {report.format === 'PDF' ? (
-                            <FilePdf className="w-8 h-8 text-red-500" />
+                            <FileText className="w-8 h-8 text-red-500" />
                           ) : (
                             <FileSpreadsheet className="w-8 h-8 text-green-500" />
                           )}

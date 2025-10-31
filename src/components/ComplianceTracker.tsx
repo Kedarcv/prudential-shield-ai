@@ -11,12 +11,6 @@ interface ComplianceItem {
 import { useCompliance } from "@/hooks/useApi";
 import { useEffect, useState } from "react";
 
-interface ComplianceItem {
-  name: string;
-  completion: number;
-  status: "compliant" | "in-progress" | "at-risk";
-}
-
 export const ComplianceTracker = () => {
   const { data: complianceData, loading } = useCompliance();
   const [complianceItems, setComplianceItems] = useState<ComplianceItem[]>([]);
@@ -26,8 +20,8 @@ export const ComplianceTracker = () => {
       const items = complianceData.frameworks.map((framework: any) => ({
         name: framework.framework.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
         completion: Math.round(framework.summary?.averageCompletion || 0),
-        status: framework.summary?.averageCompletion >= 95 ? 'compliant' : 
-                framework.summary?.averageCompletion >= 80 ? 'in-progress' : 'at-risk'
+        status: (framework.summary?.averageCompletion >= 95 ? 'compliant' : 
+                framework.summary?.averageCompletion >= 80 ? 'in-progress' : 'at-risk') as "compliant" | "in-progress" | "at-risk"
       }));
       setComplianceItems(items);
     } else {

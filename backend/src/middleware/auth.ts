@@ -14,6 +14,7 @@ export interface AuthRequest extends Request {
     id: string;
     token: string;
   };
+  startTime?: number;
 }
 
 export const authMiddleware = async (
@@ -91,7 +92,7 @@ export const authMiddleware = async (
     };
 
     req.session = {
-      id: session._id.toString(),
+      id: (session._id as any).toString(),
       token: session.token
     };
 
@@ -208,7 +209,7 @@ export const auditLog = (action: string) => {
             ipAddress: req.ip,
             userAgent: req.get('User-Agent'),
             timestamp: new Date(),
-            responseTime: Date.now() - req.startTime
+            responseTime: Date.now() - (req.startTime || Date.now())
           };
 
           await cache.setHash('audit_logs', `${Date.now()}_${req.user?.id}`, auditEntry);

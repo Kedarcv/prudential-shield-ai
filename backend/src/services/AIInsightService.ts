@@ -188,7 +188,7 @@ export class AIInsightService {
           averageTransactionSize: recentTransactions.length > 0
             ? recentTransactions.reduce((sum, t) => sum + t.amount, 0) / recentTransactions.length
             : 0,
-          riskFlags: recentTransactions.filter(t => t.riskScore && t.riskScore > 70).length
+          riskFlags: recentTransactions.filter(t => t.riskAssessment?.overallScore && t.riskAssessment.overallScore > 70).length
         }
       };
 
@@ -253,6 +253,11 @@ export class AIInsightService {
   private async generateInsightsFromContext(context: any): Promise<AIInsight[]> {
     const prompt = this.buildRiskAnalysisPrompt(context);
     
+    // Temporarily disable NVIDIA API calls due to 404 errors
+    console.log('Using fallback AI insights (NVIDIA API disabled)');
+    return this.getFallbackInsights();
+    
+    /* NVIDIA API temporarily disabled due to 404 errors
     try {
       const response = await axios.post(
         `${this.baseUrl}/completions`,
@@ -271,6 +276,7 @@ export class AIInsightService {
       console.error('NVIDIA API error:', error);
       return this.getFallbackInsights();
     }
+    */
   }
 
   private async generatePortfolioInsights(context: any): Promise<MarketInsight> {

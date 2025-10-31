@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation, Outlet } from 'react-router-dom';
+import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -38,6 +38,7 @@ const Layout = () => {
   const { isHealthy } = useHealthCheck();
   const { data: realTimeData } = useRealTimeMetrics();
   const location = useLocation();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Navigation items based on user role
@@ -153,7 +154,7 @@ const Layout = () => {
                 variant="ghost" 
                 size="sm" 
                 className="relative"
-                onClick={() => window.location.href = '/risk#alerts'}
+                onClick={() => navigate('/risk')}
               >
                 <Bell className="h-4 w-4" />
                 {realTimeData?.alerts?.critical > 0 && (
@@ -183,11 +184,11 @@ const Layout = () => {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => window.location.href = '/profile'}>
+                <DropdownMenuItem onClick={() => navigate('/profile')}>
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => window.location.href = '/admin/settings'}>
+                <DropdownMenuItem onClick={() => navigate('/admin/settings')}>
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>
@@ -209,6 +210,8 @@ const Layout = () => {
 
       {/* AI Floating Widget */}
       <AIFloatingWidget />
+      
+
     </div>
   );
 };

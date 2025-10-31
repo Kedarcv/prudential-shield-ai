@@ -217,6 +217,12 @@ router.put('/:id/dismiss',
   catchAsync(async (req: AuthRequest, res: Response) => {
     const { reason } = req.body;
 
+    // First find the existing alert
+    const existingAlert = await RiskAlert.findById(req.params.id);
+    if (!existingAlert) {
+      throw new NotFoundError('Alert');
+    }
+
     const alert = await RiskAlert.findByIdAndUpdate(
       req.params.id,
       {
@@ -224,7 +230,7 @@ router.put('/:id/dismiss',
         resolvedAt: new Date(),
         acknowledgedBy: req.user?.id,
         ...(reason && { 
-          actions: [...(alert?.actions || []), `Dismissed: ${reason}`] 
+          actions: [...(existingAlert.actions || []), `Dismissed: ${reason}`] 
         })
       },
       { new: true }

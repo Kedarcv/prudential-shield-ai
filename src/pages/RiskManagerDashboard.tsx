@@ -95,7 +95,14 @@ const RiskManagerDashboard = () => {
 };
 
 const RiskOverview = () => {
-  const riskMetrics = [
+  const riskMetrics: Array<{
+    title: string;
+    value: string;
+    change: number;
+    icon: any;
+    trend: "up" | "down" | "neutral";
+    status: "healthy" | "warning" | "critical";
+  }> = [
     { title: 'Total Risk Exposure', value: '$2.4B', change: -3.2, icon: Target, trend: 'down', status: 'healthy' },
     { title: 'VaR (95%)', value: '$1.2M', change: 5.8, icon: TrendingUp, trend: 'up', status: 'warning' },
     { title: 'Credit Risk Score', value: '72', change: -2.1, icon: TrendingDown, trend: 'down', status: 'healthy' },

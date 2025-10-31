@@ -112,7 +112,7 @@ export class UserController {
 
     // Remove password from response
     const userResponse = user.toObject();
-    delete userResponse.password;
+    delete (userResponse as any).password;
 
     res.status(201).json({
       success: true,

@@ -179,7 +179,7 @@ export class SchedulerService {
               jobName: jobDef.name,
               executedAt: new Date(),
               status: 'error',
-              error: error.message
+              error: (error as Error).message
             });
           }
         }, {
@@ -441,7 +441,7 @@ export class SchedulerService {
       totalValue: { $gt: 1000000 } // Only test significant portfolios
     }).limit(20);
 
-    const stressScenarios = [
+    const stressScenarios: { name: string; shocks: Record<string, number> }[] = [
       {
         name: 'Market Crash',
         shocks: { 'EQUITY': -30, 'BOND': -10, 'COMMODITY': -25 }

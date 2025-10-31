@@ -59,20 +59,20 @@ router.post('/login', catchAsync(async (req: Request, res: Response) => {
 
   // Generate JWT token
   const tokenPayload = {
-    userId: user._id,
+    userId: (user._id as any).toString(),
     email: user.email,
     role: user.role
   };
 
   const token = jwt.sign(
     tokenPayload,
-    process.env.JWT_SECRET || 'fallback-secret',
-    { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
+    process.env.JWT_SECRET as string || 'fallback-secret',
+    { expiresIn: process.env.JWT_EXPIRES_IN || '24h' } as jwt.SignOptions
   );
 
   // Create session
   const session = new Session({
-    userId: user._id.toString(),
+    userId: (user._id as any).toString(),
     token,
     ipAddress: req.ip,
     userAgent: req.get('User-Agent') || 'Unknown',
@@ -267,7 +267,7 @@ router.post('/reset-password', catchAsync(async (req: Request, res: Response) =>
 
   // Invalidate all existing sessions
   await Session.updateMany(
-    { userId: user._id.toString() },
+    { userId: (user._id as any).toString() },
     { isActive: false }
   );
 
@@ -401,7 +401,7 @@ router.post('/change-password', catchAsync(async (req: Request, res: Response) =
   // Invalidate all existing sessions except current one
   await Session.updateMany(
     { 
-      userId: user._id.toString(),
+      userId: (user._id as any).toString(),
       token: { $ne: token }
     },
     { isActive: false }

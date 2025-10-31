@@ -29,7 +29,8 @@ import {
   Link,
   Monitor,
   Server,
-  Wifi
+  Wifi,
+  Shield
 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
