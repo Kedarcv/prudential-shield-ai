@@ -18,50 +18,19 @@ import {
 import heroBackground from "@/assets/hero-background.jpg";
 import { useDashboardMetrics, useAlerts, useAIInsights, useHealthCheck } from "@/hooks/useApi";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { indexPageConfig, loadingConfig } from "@/config/dashboardConfig";
 
 const Index = () => {
+  const navigate = useNavigate();
   const { data: dashboardData, loading: dashboardLoading, error: dashboardError } = useDashboardMetrics();
   const { data: alertsData, loading: alertsLoading } = useAlerts({ status: 'active', limit: 10 });
   const { data: aiInsights, loading: aiLoading } = useAIInsights();
   const { isHealthy } = useHealthCheck();
   
-  // Fallback data for when API is loading or fails
-  const fallbackMetrics = {
-    riskExposure: { value: '$2.4B', change: -3.2, status: 'healthy' as const },
-    capitalAdequacy: { value: '18.5%', change: 2.1, status: 'healthy' as const },
-    liquidityRatio: { value: '142%', change: -1.5, status: 'warning' as const },
-    creditQuality: { value: '94.2%', change: 0.8, status: 'healthy' as const },
-  };
-
-  const fallbackAlerts = [
-    {
-      _id: '1',
-      alertType: 'warning',
-      severity: 'medium',
-      title: 'Market volatility increased by 15% in tech sector holdings',
-      description: 'Market volatility increased by 15% in tech sector holdings',
-      triggeredAt: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
-      status: 'active'
-    },
-    {
-      _id: '2',
-      alertType: 'info',
-      severity: 'low',
-      title: 'Liquidity coverage ratio improved to 142%',
-      description: 'Liquidity coverage ratio improved to 142%',
-      triggeredAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-      status: 'active'
-    },
-    {
-      _id: '3',
-      alertType: 'breach',
-      severity: 'high',
-      title: 'Credit concentration limit approaching threshold (92%)',
-      description: 'Credit concentration limit approaching threshold (92%)',
-      triggeredAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-      status: 'active'
-    }
-  ];
+  // Use configurable fallback data
+  const fallbackMetrics = indexPageConfig.fallbackMetrics;
+  const fallbackAlerts = indexPageConfig.fallbackAlerts;
 
   // Use real data if available, otherwise fallback
   const metrics = dashboardData?.keyMetrics || fallbackMetrics;
@@ -114,11 +83,19 @@ const Index = () => {
               for financial institutions and banking operations
             </p>
             <div className="flex items-center justify-center gap-4 pt-4">
-              <Button size="lg" className="bg-primary hover:bg-primary/90">
+              <Button 
+                size="lg" 
+                className="bg-primary hover:bg-primary/90"
+                onClick={() => navigate('/risk')}
+              >
                 <BarChart3 className="mr-2 h-5 w-5" />
                 View Dashboard
               </Button>
-              <Button size="lg" variant="secondary">
+              <Button 
+                size="lg" 
+                variant="secondary"
+                onClick={() => navigate('/compliance')}
+              >
                 <Brain className="mr-2 h-5 w-5" />
                 Analytics
               </Button>
@@ -131,9 +108,9 @@ const Index = () => {
       <section className="container mx-auto px-6 py-12 space-y-8">
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {dashboardLoading ? (
+        {dashboardLoading ? (
             // Loading skeletons
-            Array.from({ length: 4 }).map((_, i) => (
+            Array.from({ length: loadingConfig.skeletonCount.metrics }).map((_, i) => (
               <div key={i} className="p-6 rounded-lg border bg-card">
                 <Skeleton className="h-4 w-24 mb-4" />
                 <Skeleton className="h-8 w-16 mb-2" />
@@ -193,7 +170,7 @@ const Index = () => {
               <div className="space-y-3">
                 {alertsLoading ? (
                   // Loading skeletons for alerts
-                  Array.from({ length: 3 }).map((_, i) => (
+                  Array.from({ length: loadingConfig.skeletonCount.alerts }).map((_, i) => (
                     <div key={i} className="p-4 rounded-lg border bg-card">
                       <Skeleton className="h-4 w-full mb-2" />
                       <Skeleton className="h-4 w-24" />
@@ -223,7 +200,7 @@ const Index = () => {
               <div className="space-y-4">
                 {aiLoading ? (
                   // Loading skeletons for AI insights
-                  Array.from({ length: 3 }).map((_, i) => (
+                  Array.from({ length: loadingConfig.skeletonCount.insights }).map((_, i) => (
                     <div key={i} className="p-5 rounded-lg border bg-card">
                       <div className="flex items-start gap-4">
                         <Skeleton className="w-11 h-11 rounded-lg" />

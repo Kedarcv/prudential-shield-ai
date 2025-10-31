@@ -15,6 +15,8 @@ import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
 import RiskManagerDashboard from "./pages/RiskManagerDashboard";
 import ComplianceDashboard from "./pages/ComplianceDashboard";
+import UserManagement from "./pages/UserManagement";
+import SystemSettings from "./pages/SystemSettings";
 
 // Hooks
 import { useAuth } from "./hooks/useApi";
@@ -52,7 +54,16 @@ const AppRoutes = () => {
             <ComplianceDashboard />
           </ProtectedRoute>
         } />
-        {/* Add more protected routes here */}
+        <Route path="users" element={
+          <ProtectedRoute requiredRole="admin">
+            <UserManagement />
+          </ProtectedRoute>
+        } />
+        <Route path="settings" element={
+          <ProtectedRoute requiredRole="admin">
+            <SystemSettings />
+          </ProtectedRoute>
+        } />
       </Route>
       <Route path="/login" element={<Navigate to="/" replace />} />
       <Route path="*" element={<NotFound />} />

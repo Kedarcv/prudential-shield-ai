@@ -161,6 +161,39 @@ export class UserController {
   });
 
   /**
+   * Update user status (active/inactive)
+   */
+  public static updateUserStatus = catchAsync(async (req: AuthRequest, res: Response) => {
+    const userId = req.params.id;
+    const { status } = req.body;
+
+    if (!['active', 'inactive'].includes(status)) {
+      throw new ValidationError('Status must be either "active" or "inactive"');
+    }
+
+    // Don't allow users to deactivate themselves
+    if (userId === req.user?.id && status === 'inactive') {
+      throw new ValidationError('You cannot deactivate your own account');
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { isActive: status === 'active' },
+      { new: true }
+    ).select('-password');
+
+    if (!user) {
+      throw new NotFoundError('User');
+    }
+
+    res.json({
+      success: true,
+      data: user,
+      message: `User ${status === 'active' ? 'activated' : 'deactivated'} successfully`
+    });
+  });
+
+  /**
    * Delete user (soft delete by setting isActive to false)
    */
   public static deleteUser = catchAsync(async (req: AuthRequest, res: Response) => {

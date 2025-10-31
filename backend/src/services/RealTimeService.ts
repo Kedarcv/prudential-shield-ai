@@ -3,6 +3,15 @@ import { EventEmitter } from 'events';
 import { RiskAlert, IRiskAlert } from '../models/Risk';
 import { cache } from '../config/redis';
 import { RiskCalculationService } from './RiskCalculationService';
+import {
+  riskThresholds,
+  realTimeConfig,
+  portfolioBaseMetrics,
+  realTimeMetricsBase,
+  portfolioValues,
+  stressTestScenarios,
+  alertSummaryConfig
+} from '../config/riskThresholds';
 
 export interface RealTimeMetrics {
   timestamp: Date;
@@ -105,7 +114,7 @@ export class RealTimeService extends EventEmitter {
     this.broadcast(message);
 
     // Cache for offline clients
-    await cache.setHash('pending_alerts', alert._id.toString(), message);
+    await cache.setHash('pending_alerts', String(alert._id), message);
   }
 
   public async broadcastMarketUpdate(update: MarketDataUpdate): Promise<void> {
@@ -264,8 +273,8 @@ export class RealTimeService extends EventEmitter {
       // Get recent alerts for user
       const alerts = await RiskAlert.find({
         status: 'active',
-        triggeredAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } // Last 24 hours
-      }).sort({ triggeredAt: -1 }).limit(50);
+        triggeredAt: { $gte: new Date(Date.now() - realTimeConfig.alertLookbackHours * 60 * 60 * 1000) }
+      }).sort({ triggeredAt: -1 }).limit(realTimeConfig.alertLimitRecent);
 
       this.sendMessage(ws, {
         type: 'pending_alerts',
@@ -285,7 +294,7 @@ export class RealTimeService extends EventEmitter {
     if (!metrics) {
       // Calculate fresh metrics
       metrics = await this.calculatePortfolioMetrics(portfolioId);
-      await cache.set(cacheKey, metrics, 300); // Cache for 5 minutes
+      await cache.set(cacheKey, metrics, realTimeConfig.cacheExpirationSeconds);
     }
 
     return metrics;
@@ -293,21 +302,17 @@ export class RealTimeService extends EventEmitter {
 
   private async calculatePortfolioMetrics(portfolioId: string): Promise<any> {
     // This would integrate with your portfolio data and risk calculations
-    // For now, return sample data structure
+    // Using configurable base metrics
     return {
-      totalValue: 10000000,
-      dailyReturn: 0.0023,
-      volatility: 0.15,
-      var95: 150000,
-      var99: 250000,
-      expectedShortfall: 300000,
-      beta: 1.05,
-      sharpeRatio: 1.2,
-      positions: {
-        equity: 0.6,
-        bonds: 0.3,
-        alternatives: 0.1
-      },
+      totalValue: portfolioBaseMetrics.totalValue,
+      dailyReturn: portfolioBaseMetrics.dailyReturnBase,
+      volatility: portfolioBaseMetrics.volatilityBase,
+      var95: portfolioBaseMetrics.var95Base,
+      var99: portfolioBaseMetrics.var99Base,
+      expectedShortfall: portfolioBaseMetrics.var99Base * realTimeMetricsBase.expectedShortfallMultiplier,
+      beta: portfolioBaseMetrics.betaBase,
+      sharpeRatio: portfolioBaseMetrics.sharpeRatioBase,
+      positions: portfolioBaseMetrics.positions,
       lastUpdated: new Date()
     };
   }
@@ -316,7 +321,7 @@ export class RealTimeService extends EventEmitter {
     // Check if this price change triggers any risk recalculations
     const changePercent = Math.abs(update.changePercent);
     
-    if (changePercent > 5) { // 5% threshold for recalculation
+    if (changePercent > realTimeConfig.significantPriceChangeThreshold) {
       console.log(`Significant price movement in ${update.symbol}: ${update.changePercent}%`);
       
       // Trigger portfolio revaluation for affected portfolios
@@ -334,32 +339,7 @@ export class RealTimeService extends EventEmitter {
   }
 
   private initializeThresholds(): void {
-    this.thresholds = [
-      {
-        metric: 'var95',
-        threshold: 1000000, // $1M
-        comparison: 'greater_than',
-        severity: 'high'
-      },
-      {
-        metric: 'capitalAdequacy',
-        threshold: 12, // 12%
-        comparison: 'less_than',
-        severity: 'critical'
-      },
-      {
-        metric: 'liquidityCoverage',
-        threshold: 100, // 100%
-        comparison: 'less_than',
-        severity: 'high'
-      },
-      {
-        metric: 'leverageRatio',
-        threshold: 3, // 3%
-        comparison: 'less_than',
-        severity: 'medium'
-      }
-    ];
+    this.thresholds = riskThresholds;
   }
 
   private async checkThresholds(metrics: RealTimeMetrics): Promise<void> {
@@ -407,7 +387,7 @@ export class RealTimeService extends EventEmitter {
     const recentAlert = await RiskAlert.findOne({
       riskCategory: 'compliance',
       title: { $regex: threshold.metric, $options: 'i' },
-      triggeredAt: { $gte: new Date(Date.now() - 60 * 60 * 1000) }, // Last hour
+      triggeredAt: { $gte: new Date(Date.now() - realTimeConfig.duplicateAlertWindowMs) },
       status: 'active'
     });
 
@@ -436,7 +416,7 @@ export class RealTimeService extends EventEmitter {
   }
 
   private startRealTimeUpdates(): void {
-    // Update metrics every 30 seconds
+    // Update metrics at configurable interval
     this.updateInterval = setInterval(async () => {
       try {
         const metrics = await this.generateRealTimeMetrics();
@@ -444,36 +424,32 @@ export class RealTimeService extends EventEmitter {
       } catch (error) {
         console.error('Error updating real-time metrics:', error);
       }
-    }, 30000);
+    }, realTimeConfig.updateIntervalMs);
   }
 
   private async generateRealTimeMetrics(): Promise<RealTimeMetrics> {
     // This would integrate with your actual data sources
-    // For now, generate sample data with some randomness
+    // Using configurable base metrics with random variance
     const baseMetrics = {
-      var95: 800000 + (Math.random() - 0.5) * 200000,
-      var99: 1200000 + (Math.random() - 0.5) * 300000,
-      capitalAdequacy: 15.5 + (Math.random() - 0.5) * 2,
-      liquidityCoverage: 135 + (Math.random() - 0.5) * 20,
-      leverageRatio: 6.2 + (Math.random() - 0.5) * 1
+      var95: realTimeMetricsBase.var95 + (Math.random() - 0.5) * realTimeMetricsBase.var95Variance,
+      var99: realTimeMetricsBase.var99 + (Math.random() - 0.5) * realTimeMetricsBase.var99Variance,
+      capitalAdequacy: realTimeMetricsBase.capitalAdequacy + (Math.random() - 0.5) * realTimeMetricsBase.capitalAdequacyVariance,
+      liquidityCoverage: realTimeMetricsBase.liquidityCoverage + (Math.random() - 0.5) * realTimeMetricsBase.liquidityCoverageVariance,
+      leverageRatio: realTimeMetricsBase.leverageRatio + (Math.random() - 0.5) * realTimeMetricsBase.leverageRatioVariance
     };
 
     return {
       timestamp: new Date(),
       portfolioValues: {
-        'MAIN_PORTFOLIO': 50000000 + (Math.random() - 0.5) * 1000000,
-        'TRADING_PORTFOLIO': 25000000 + (Math.random() - 0.5) * 500000,
-        'FIXED_INCOME': 75000000 + (Math.random() - 0.5) * 750000
+        'MAIN_PORTFOLIO': portfolioValues.mainPortfolio.base + (Math.random() - 0.5) * portfolioValues.mainPortfolio.variance,
+        'TRADING_PORTFOLIO': portfolioValues.tradingPortfolio.base + (Math.random() - 0.5) * portfolioValues.tradingPortfolio.variance,
+        'FIXED_INCOME': portfolioValues.fixedIncome.base + (Math.random() - 0.5) * portfolioValues.fixedIncome.variance
       },
       riskMetrics: {
         var95: baseMetrics.var95,
         var99: baseMetrics.var99,
-        expectedShortfall: baseMetrics.var99 * 1.3,
-        stressTestResults: [
-          { scenario: 'Market Crash', loss: 2500000 },
-          { scenario: 'Interest Rate Shock', loss: 1800000 },
-          { scenario: 'Credit Crisis', loss: 3200000 }
-        ]
+        expectedShortfall: baseMetrics.var99 * realTimeMetricsBase.expectedShortfallMultiplier,
+        stressTestResults: stressTestScenarios
       },
       complianceRatios: {
         capitalAdequacy: baseMetrics.capitalAdequacy,
@@ -481,10 +457,10 @@ export class RealTimeService extends EventEmitter {
         leverageRatio: baseMetrics.leverageRatio
       },
       alertSummary: {
-        critical: Math.floor(Math.random() * 3),
-        high: Math.floor(Math.random() * 8),
-        medium: Math.floor(Math.random() * 15),
-        low: Math.floor(Math.random() * 25)
+        critical: Math.floor(Math.random() * alertSummaryConfig.criticalMax),
+        high: Math.floor(Math.random() * alertSummaryConfig.highMax),
+        medium: Math.floor(Math.random() * alertSummaryConfig.mediumMax),
+        low: Math.floor(Math.random() * alertSummaryConfig.lowMax)
       }
     };
   }

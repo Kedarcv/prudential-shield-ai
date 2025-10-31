@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { MetricCard } from '@/components/MetricCard';
 import { useDashboardMetrics, usePortfolios, useRealTimeMetrics } from '@/hooks/useApi';
+import { riskManagerConfig } from '@/config/dashboardConfig';
 
 const RiskManagerDashboard = () => {
   const { data: dashboardData } = useDashboardMetrics();
@@ -117,12 +118,7 @@ const RiskOverview = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                { type: 'Credit Risk', amount: 890000000, percentage: 37, color: 'bg-blue-500' },
-                { type: 'Market Risk', amount: 640000000, percentage: 27, color: 'bg-green-500' },
-                { type: 'Operational Risk', amount: 480000000, percentage: 20, color: 'bg-yellow-500' },
-                { type: 'Liquidity Risk', amount: 380000000, percentage: 16, color: 'bg-red-500' }
-              ].map((risk) => (
+              {riskManagerConfig.riskDistribution.map((risk) => (
                 <div key={risk.type} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className={`w-3 h-3 rounded-full ${risk.color}`} />
@@ -182,19 +178,19 @@ const CreditRiskManagement = () => {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span>Total Exposure</span>
-                <span className="font-semibold">$890M</span>
+                <span className="font-semibold">${(riskManagerConfig.creditRisk.portfolio.totalExposure / 1000000).toFixed(0)}M</span>
               </div>
               <div className="flex justify-between items-center">
                 <span>Expected Credit Loss</span>
-                <span className="font-semibold">$12.4M</span>
+                <span className="font-semibold">${(riskManagerConfig.creditRisk.portfolio.expectedCreditLoss / 1000000).toFixed(1)}M</span>
               </div>
               <div className="flex justify-between items-center">
                 <span>Non-Performing Loans</span>
-                <span className="font-semibold">2.8%</span>
+                <span className="font-semibold">{riskManagerConfig.creditRisk.portfolio.nonPerformingLoansRate}%</span>
               </div>
               <div className="flex justify-between items-center">
                 <span>Average PD</span>
-                <span className="font-semibold">1.4%</span>
+                <span className="font-semibold">{riskManagerConfig.creditRisk.portfolio.averagePD}%</span>
               </div>
             </div>
           </CardContent>
@@ -208,15 +204,15 @@ const CreditRiskManagement = () => {
             <div className="space-y-3">
               <div className="flex justify-between items-center p-2 border rounded">
                 <span>Stage 1 (12-month ECL)</span>
-                <Badge>85.2%</Badge>
+                <Badge>{riskManagerConfig.creditRisk.ifrsStaging.stage1}%</Badge>
               </div>
               <div className="flex justify-between items-center p-2 border rounded">
                 <span>Stage 2 (Lifetime ECL)</span>
-                <Badge variant="secondary">12.0%</Badge>
+                <Badge variant="secondary">{riskManagerConfig.creditRisk.ifrsStaging.stage2}%</Badge>
               </div>
               <div className="flex justify-between items-center p-2 border rounded">
                 <span>Stage 3 (Credit Impaired)</span>
-                <Badge variant="destructive">2.8%</Badge>
+                <Badge variant="destructive">{riskManagerConfig.creditRisk.ifrsStaging.stage3}%</Badge>
               </div>
             </div>
           </CardContent>
@@ -256,11 +252,7 @@ const CreditRiskManagement = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {[
-              { name: 'Advanced Manufacturing Ltd', exposure: 15000000, rating: 'BB+', pd: 0.025, stage: 2 },
-              { name: 'Tech Innovations PVT', exposure: 12000000, rating: 'A-', pd: 0.012, stage: 1 },
-              { name: 'Mining Corporation ZW', exposure: 10000000, rating: 'BBB', pd: 0.018, stage: 1 }
-            ].map((borrower, index) => (
+            {riskManagerConfig.creditRisk.topExposures.map((borrower, index) => (
               <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
                   <p className="font-medium">{borrower.name}</p>
@@ -293,7 +285,7 @@ const MarketRiskManagement = () => {
             <CardTitle>VaR (95%)</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$1.2M</div>
+            <div className="text-2xl font-bold">${(riskManagerConfig.marketRisk.metrics.var95 / 1000000).toFixed(1)}M</div>
             <p className="text-sm text-muted-foreground">1-day horizon</p>
           </CardContent>
         </Card>
@@ -303,7 +295,7 @@ const MarketRiskManagement = () => {
             <CardTitle>Expected Shortfall</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$1.8M</div>
+            <div className="text-2xl font-bold">${(riskManagerConfig.marketRisk.metrics.expectedShortfall / 1000000).toFixed(1)}M</div>
             <p className="text-sm text-muted-foreground">Tail risk (95%)</p>
           </CardContent>
         </Card>
@@ -313,7 +305,7 @@ const MarketRiskManagement = () => {
             <CardTitle>Portfolio Beta</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1.15</div>
+            <div className="text-2xl font-bold">{riskManagerConfig.marketRisk.metrics.portfolioBeta}</div>
             <p className="text-sm text-muted-foreground">vs market</p>
           </CardContent>
         </Card>
@@ -323,7 +315,7 @@ const MarketRiskManagement = () => {
             <CardTitle>Volatility</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">18.4%</div>
+            <div className="text-2xl font-bold">{riskManagerConfig.marketRisk.metrics.volatility}%</div>
             <p className="text-sm text-muted-foreground">Annualized</p>
           </CardContent>
         </Card>
@@ -336,12 +328,7 @@ const MarketRiskManagement = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {[
-              { scenario: 'Market Crash (-30%)', loss: 2500000, impact: 'High' },
-              { scenario: 'Interest Rate Shock (+200bp)', loss: 1800000, impact: 'Medium' },
-              { scenario: 'Currency Crisis', loss: 1200000, impact: 'Medium' },
-              { scenario: 'Credit Spread Widening', loss: 900000, impact: 'Low' }
-            ].map((test, index) => (
+            {riskManagerConfig.marketRisk.stressTests.map((test, index) => (
               <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                 <div>
                   <p className="font-medium">{test.scenario}</p>
@@ -373,11 +360,7 @@ const OperationalRiskManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {[
-                { event: 'System Outage', businessLine: 'IT', impact: 150000, status: 'Investigating' },
-                { event: 'Process Error', businessLine: 'Operations', impact: 45000, status: 'Resolved' },
-                { event: 'Compliance Violation', businessLine: 'Legal', impact: 25000, status: 'Under Review' }
-              ].map((event, index) => (
+              {riskManagerConfig.operationalRisk.events.map((event, index) => (
                 <div key={index} className="p-3 border rounded-lg">
                   <div className="flex justify-between items-start mb-2">
                     <p className="font-medium">{event.event}</p>
@@ -399,12 +382,7 @@ const OperationalRiskManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {[
-                { indicator: 'Failed Transactions', value: '0.12%', threshold: '0.15%', status: 'Normal' },
-                { indicator: 'System Downtime', value: '0.05%', threshold: '0.10%', status: 'Normal' },
-                { indicator: 'Staff Turnover', value: '8.5%', threshold: '10%', status: 'Warning' },
-                { indicator: 'Error Rate', value: '0.08%', threshold: '0.05%', status: 'Alert' }
-              ].map((kri, index) => (
+              {riskManagerConfig.operationalRisk.keyRiskIndicators.map((kri, index) => (
                 <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
                     <p className="font-medium">{kri.indicator}</p>
@@ -435,7 +413,7 @@ const LiquidityRiskManagement = () => {
             <CardTitle>Liquidity Coverage Ratio</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">142%</div>
+            <div className="text-2xl font-bold text-green-600">{riskManagerConfig.liquidityRisk.ratios.liquidityCoverage}%</div>
             <p className="text-sm text-muted-foreground">Required: 100%</p>
           </CardContent>
         </Card>
@@ -445,7 +423,7 @@ const LiquidityRiskManagement = () => {
             <CardTitle>Net Stable Funding Ratio</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">118%</div>
+            <div className="text-2xl font-bold text-green-600">{riskManagerConfig.liquidityRisk.ratios.netStableFunding}%</div>
             <p className="text-sm text-muted-foreground">Required: 100%</p>
           </CardContent>
         </Card>
@@ -455,7 +433,7 @@ const LiquidityRiskManagement = () => {
             <CardTitle>Liquidity Buffer</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$45M</div>
+            <div className="text-2xl font-bold">${(riskManagerConfig.liquidityRisk.ratios.liquidityBuffer / 1000000).toFixed(0)}M</div>
             <p className="text-sm text-muted-foreground">Available HQLA</p>
           </CardContent>
         </Card>
@@ -468,12 +446,7 @@ const LiquidityRiskManagement = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {[
-              { period: 'Overnight', inflow: 5000000, outflow: 3000000, net: 2000000 },
-              { period: '1-7 days', inflow: 15000000, outflow: 12000000, net: 3000000 },
-              { period: '1-30 days', inflow: 25000000, outflow: 30000000, net: -5000000 },
-              { period: '30-90 days', inflow: 40000000, outflow: 35000000, net: 5000000 }
-            ].map((bucket, index) => (
+            {riskManagerConfig.liquidityRisk.cashFlowForecast.map((bucket, index) => (
               <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                 <span className="font-medium">{bucket.period}</span>
                 <div className="flex gap-6 text-sm">

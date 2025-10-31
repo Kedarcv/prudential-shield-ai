@@ -320,3 +320,107 @@ export function useHealthCheck() {
 
   return { isHealthy, lastCheck };
 }
+
+// User management hooks
+export function useUsers(params: {
+  search?: string;
+  role?: string;
+  status?: string;
+} = {}) {
+  return useApi(() => apiService.getUsers(params), [JSON.stringify(params)]);
+}
+
+export function useUserActions() {
+  const [loading, setLoading] = useState(false);
+
+  const createUser = async (userData: any) => {
+    setLoading(true);
+    try {
+      const result = await apiService.createUser(userData);
+      return result;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateUser = async (userId: string, userData: any) => {
+    setLoading(true);
+    try {
+      const result = await apiService.updateUser(userId, userData);
+      return result;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteUser = async (userId: string) => {
+    setLoading(true);
+    try {
+      await apiService.deleteUser(userId);
+      return true;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateUserStatus = async (userId: string, status: string) => {
+    setLoading(true);
+    try {
+      const result = await apiService.updateUserStatus(userId, status);
+      return result;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    createUser,
+    updateUser,
+    deleteUser,
+    updateUserStatus,
+    loading
+  };
+}
+
+// System settings hook
+export function useSystemSettings() {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchSettings = async () => {
+    try {
+      setLoading(true);
+      const settings = await apiService.getSystemSettings();
+      setData(settings);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateSettings = async (section: string, settings: any) => {
+    setLoading(true);
+    try {
+      const result = await apiService.updateSystemSettings(section, settings);
+      setData(prev => ({ ...prev, [section]: settings }));
+      return result;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  return {
+    data,
+    loading,
+    error,
+    updateSettings,
+    refetch: fetchSettings
+  };
+}

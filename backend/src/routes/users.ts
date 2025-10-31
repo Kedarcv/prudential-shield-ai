@@ -55,6 +55,16 @@ router.put('/:id',
 );
 
 /**
+ * PATCH /api/users/:id/status
+ * Update user status (active/inactive)
+ */
+router.patch('/:id/status',
+  requirePermission('manage_users'),
+  auditLog('update_user_status'),
+  UserController.updateUserStatus
+);
+
+/**
  * DELETE /api/users/:id
  * Delete user (soft delete)
  */

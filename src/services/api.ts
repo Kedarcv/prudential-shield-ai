@@ -320,6 +320,27 @@ class APIService {
     return response.data.data;
   }
 
+  async updateUserStatus(userId: string, status: string): Promise<User> {
+    const response = await this.api.patch(`/users/${userId}/status`, { status });
+    return response.data.data;
+  }
+
+  // System Settings APIs
+  async getSystemSettings(): Promise<any> {
+    const response = await this.api.get('/settings');
+    return response.data.data;
+  }
+
+  async updateSystemSettings(section: string, settings: any): Promise<any> {
+    const response = await this.api.put(`/settings/${section}`, settings);
+    return response.data.data;
+  }
+
+  async getSystemInfo(): Promise<any> {
+    const response = await this.api.get('/settings/system-info');
+    return response.data.data;
+  }
+
   // Health check
   async healthCheck(): Promise<{ status: string; timestamp: string }> {
     const response = await this.api.get('/health');
