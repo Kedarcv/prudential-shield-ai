@@ -47,7 +47,7 @@ async function seedDatabase() {
         role: 'admin',
         department: 'IT',
         permissions: [
-          'view_dashboard', 'manage_users', 'generate_reports', 'manage_compliance',
+          'view_dashboard', 'manage_users', 'view_users', 'generate_reports', 'manage_compliance',
           'calculate_credit_risk', 'calculate_market_risk', 'calculate_liquidity_risk',
           'perform_stress_test', 'view_risk_assessments', 'update_risk_assessments',
           'create_operational_risk', 'view_operational_risk', 'view_credit_risk',

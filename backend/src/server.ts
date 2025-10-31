@@ -20,6 +20,7 @@ import riskRoutes from './routes/risk';
 import complianceRoutes from './routes/compliance';
 import alertRoutes from './routes/alerts';
 import reportRoutes from './routes/reports';
+import userRoutes from './routes/users';
 
 import { RealTimeService } from './services/RealTimeService';
 import { SchedulerService } from './services/SchedulerService';
@@ -67,6 +68,14 @@ app.get('/health', (req, res) => {
   });
 });
 
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    version: process.env.npm_package_version || '1.0.0'
+  });
+});
+
 // Public routes
 app.use('/api/auth', authRoutes);
 
@@ -76,6 +85,7 @@ app.use('/api/risk', authMiddleware, riskRoutes);
 app.use('/api/compliance', authMiddleware, complianceRoutes);
 app.use('/api/alerts', authMiddleware, alertRoutes);
 app.use('/api/reports', authMiddleware, reportRoutes);
+app.use('/api/users', authMiddleware, userRoutes);
 
 // WebSocket connection handler
 wss.on('connection', (ws) => {

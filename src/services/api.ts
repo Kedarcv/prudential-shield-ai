@@ -265,6 +265,61 @@ class APIService {
     return response.data.data;
   }
 
+  // User Management APIs
+  async getUsers(params: {
+    page?: number;
+    limit?: number;
+    role?: string;
+    department?: string;
+    search?: string;
+  } = {}): Promise<any> {
+    const response = await this.api.get('/users', { params });
+    return response.data.data;
+  }
+
+  async getUserById(userId: string): Promise<User> {
+    const response = await this.api.get(`/users/${userId}`);
+    return response.data.data;
+  }
+
+  async createUser(userData: {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    department: string;
+    permissions?: string[];
+  }): Promise<User> {
+    const response = await this.api.post('/users', userData);
+    return response.data.data;
+  }
+
+  async updateUser(userId: string, userData: {
+    firstName?: string;
+    lastName?: string;
+    role?: string;
+    department?: string;
+    permissions?: string[];
+    isActive?: boolean;
+  }): Promise<User> {
+    const response = await this.api.put(`/users/${userId}`, userData);
+    return response.data.data;
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    await this.api.delete(`/users/${userId}`);
+  }
+
+  async resetUserPassword(userId: string, newPassword: string): Promise<void> {
+    await this.api.post(`/users/${userId}/reset-password`, { newPassword });
+  }
+
+  async getUserStats(): Promise<any> {
+    const response = await this.api.get('/users/stats');
+    return response.data.data;
+  }
+
   // Health check
   async healthCheck(): Promise<{ status: string; timestamp: string }> {
     const response = await this.api.get('/health');
@@ -273,7 +328,8 @@ class APIService {
 
   // Utility methods
   isAuthenticated(): boolean {
-    return !!this.token;
+    const token = localStorage.getItem('auth_token');
+    return !!token;
   }
 
   getCurrentUser(): User | null {

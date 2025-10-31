@@ -92,7 +92,7 @@ const Layout = () => {
           <div className="mr-4 hidden md:flex">
             <Link to="/" className="mr-6 flex items-center space-x-2">
               <Shield className="h-6 w-6" />
-              <span className="hidden font-bold sm:inline-block">RiskWise 2.0</span>
+              <span className="hidden font-bold sm:inline-block">Risk Management</span>
             </Link>
             <nav className="flex items-center space-x-6 text-sm font-medium">
               {navigation.map((item) => (
@@ -206,7 +206,7 @@ const MobileNav = ({ navigation }: { navigation: any[] }) => {
     <div className="px-6 pb-6">
       <div className="flex items-center space-x-2 mb-6">
         <Shield className="h-6 w-6" />
-        <span className="font-bold">RiskWise 2.0</span>
+        <span className="font-bold">Risk Management</span>
       </div>
       <div className="flex flex-col space-y-2">
         {navigation.map((item) => (

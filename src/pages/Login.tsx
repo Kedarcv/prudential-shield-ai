@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,10 +14,19 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isInitialized, setIsInitialized] = useState(false);
   const { login, loading, isAuthenticated } = useAuth();
 
-  // Redirect if already authenticated
-  if (isAuthenticated) {
+  useEffect(() => {
+    // Add a delay to prevent infinite redirects
+    const timer = setTimeout(() => {
+      setIsInitialized(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Redirect if already authenticated (only after initialization)
+  if (isAuthenticated && isInitialized) {
     return <Navigate to="/" replace />;
   }
 
@@ -69,10 +78,10 @@ const Login = () => {
               <Shield className="w-8 h-8 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-2xl font-bold">Welcome to RiskWise 2.0</CardTitle>
-              <CardDescription className="text-muted-foreground">
-                Sign in to your risk management dashboard
-              </CardDescription>
+            <CardTitle className="text-2xl font-bold">Prudential Risk Management System</CardTitle>
+            <CardDescription className="text-muted-foreground">
+              Please sign in to access the risk management platform
+            </CardDescription>
             </div>
           </CardHeader>
           

@@ -230,8 +230,27 @@ export function useAlertActions() {
 
 // Authentication hooks
 export function useAuth() {
-  const [user, setUser] = useState(apiService.getCurrentUser());
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // Initialize auth state on mount
+    const token = localStorage.getItem('auth_token');
+    const userData = localStorage.getItem('user_data');
+    
+    if (token && userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_data');
+      }
+    }
+  }, []);
 
   const login = async (email: string, password: string) => {
     setLoading(true);
@@ -239,6 +258,7 @@ export function useAuth() {
       const response = await apiService.login({ email, password });
       if (response.success) {
         setUser(response.data.user);
+        setIsAuthenticated(true);
         return { success: true };
       }
       return { success: false, error: 'Login failed' };
@@ -254,8 +274,11 @@ export function useAuth() {
     try {
       await apiService.logout();
       setUser(null);
+      setIsAuthenticated(false);
     } catch (error) {
       console.error('Logout error:', error);
+      setUser(null);
+      setIsAuthenticated(false);
     } finally {
       setLoading(false);
     }
@@ -266,7 +289,7 @@ export function useAuth() {
     login,
     logout,
     loading,
-    isAuthenticated: apiService.isAuthenticated(),
+    isAuthenticated,
   };
 }
 

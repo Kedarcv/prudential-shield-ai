@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Users, 
@@ -15,9 +16,11 @@ import {
   BarChart3,
   FileText,
   RefreshCw,
-  Plus
+  Plus,
+  Edit
 } from 'lucide-react';
 import { useAuth, useDashboardMetrics, useRealTimeMetrics } from '@/hooks/useApi';
+import { apiService } from '@/services/api';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -160,10 +163,10 @@ const AdminDashboard = () => {
                         <div>
                           <p className="font-medium capitalize">{component}</p>
                           <p className="text-sm text-muted-foreground">
-                            {status.responseTime && `Response: ${status.responseTime}`}
-                            {status.connections && ` | Connections: ${status.connections}`}
-                            {status.requests && ` | Requests: ${status.requests}`}
-                            {status.jobsRunning && ` | Jobs: ${status.jobsRunning}`}
+                            {('responseTime' in status) && `Response: ${(status as any).responseTime}`}
+                            {('connections' in status) && ` | Connections: ${(status as any).connections}`}
+                            {('requests' in status) && ` | Requests: ${(status as any).requests}`}
+                            {('jobsRunning' in status) && ` | Jobs: ${(status as any).jobsRunning}`}
                           </p>
                         </div>
                       </div>
@@ -225,45 +228,218 @@ const AdminDashboard = () => {
 
 // User Management Component
 const UserManagement = () => {
-  const users = [
-    { id: '1', name: 'Admin User', email: 'admin@riskwise.com', role: 'admin', status: 'active', lastLogin: '2 hours ago' },
-    { id: '2', name: 'Sarah Johnson', email: 'risk.manager@riskwise.com', role: 'risk_manager', status: 'active', lastLogin: '5 minutes ago' },
-    { id: '3', name: 'Michael Chen', email: 'analyst@riskwise.com', role: 'analyst', status: 'active', lastLogin: '1 hour ago' },
-    { id: '4', name: 'Emma Williams', email: 'compliance@riskwise.com', role: 'auditor', status: 'active', lastLogin: '3 hours ago' }
-  ];
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const loadUsers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await apiService.getUsers({
+        page,
+        limit: 10,
+        search: searchTerm
+      });
+      setUsers(response.users);
+      setTotalPages(response.pagination.totalPages);
+    } catch (error) {
+      console.error('Failed to load users:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, searchTerm]);
+
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
+
+  const handleDeleteUser = async (userId: string) => {
+    if (window.confirm('Are you sure you want to deactivate this user?')) {
+      try {
+        await apiService.deleteUser(userId);
+        loadUsers(); // Reload the list
+      } catch (error) {
+        console.error('Failed to delete user:', error);
+      }
+    }
+  };
+
+  const handleEditUser = (user: any) => {
+    setEditingUser(user);
+  };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>User Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-32 animate-pulse" />
+                    <div className="h-3 bg-gray-200 rounded w-48 animate-pulse" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-6 bg-gray-200 rounded w-20 animate-pulse" />
+                  <div className="h-6 bg-gray-200 rounded w-16 animate-pulse" />
+                  <div className="h-8 bg-gray-200 rounded w-16 animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>User Management</CardTitle>
-        <CardDescription>Manage system users and their permissions</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {users.map((user) => (
-            <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Users className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium">{user.name}</p>
-                  <p className="text-sm text-muted-foreground">{user.email}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <Badge variant="outline">{user.role.replace('_', ' ')}</Badge>
-                <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
-                  {user.status}
-                </Badge>
-                <span className="text-sm text-muted-foreground">{user.lastLogin}</span>
-                <Button variant="outline" size="sm">Edit</Button>
-              </div>
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>User Management</CardTitle>
+              <CardDescription>Manage system users and their permissions</CardDescription>
             </div>
-          ))}
+            <Button onClick={() => setShowCreateDialog(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add User
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Search */}
+            <div className="flex items-center gap-4">
+              <Input
+                placeholder="Search users..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="max-w-sm"
+              />
+              <Button variant="outline" onClick={() => setSearchTerm('')}>
+                Clear
+              </Button>
+            </div>
+
+            {/* Users List */}
+            <div className="space-y-3">
+              {users.map((user) => (
+                <div key={user._id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Users className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{user.firstName} {user.lastName}</p>
+                      <p className="text-sm text-muted-foreground">{user.email}</p>
+                      <p className="text-xs text-muted-foreground">{user.department}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge variant="outline">
+                      {user.role.replace('_', ' ')}
+                    </Badge>
+                    <Badge variant={user.isActive ? 'default' : 'secondary'}>
+                      {user.isActive ? 'Active' : 'Inactive'}
+                    </Badge>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleEditUser(user)}
+                      >
+                        <Edit className="w-4 h-4 mr-1" />
+                        Edit
+                      </Button>
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={() => handleDeleteUser(user._id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 pt-4">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  disabled={page <= 1}
+                  onClick={() => setPage(page - 1)}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  Page {page} of {totalPages}
+                </span>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage(page + 1)}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Create/Edit User Dialogs - Would be implemented as modal components */}
+      {showCreateDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg max-w-md w-full">
+            <h3 className="text-lg font-bold mb-4">Add User</h3>
+            <p className="text-sm text-muted-foreground">User creation form would go here</p>
+            <div className="flex justify-end gap-2 mt-4">
+              <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={() => setShowCreateDialog(false)}>
+                Create
+              </Button>
+            </div>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      )}
+
+      {editingUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg max-w-md w-full">
+            <h3 className="text-lg font-bold mb-4">Edit User</h3>
+            <p className="text-sm text-muted-foreground">
+              Editing: {editingUser.firstName} {editingUser.lastName}
+            </p>
+            <div className="flex justify-end gap-2 mt-4">
+              <Button variant="outline" onClick={() => setEditingUser(null)}>
+                Cancel
+              </Button>
+              <Button onClick={() => setEditingUser(null)}>
+                Save
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

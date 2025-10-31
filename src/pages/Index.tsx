@@ -107,11 +107,11 @@ const Index = () => {
               </span>
             </div>
             <h1 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
-              Sentry 
+              Prudential Risk Management
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Strengthen resilience and regulatory alignment with AI-powered prudential
-              risk management for financial institutions
+              Comprehensive risk assessment and regulatory compliance platform 
+              for financial institutions and banking operations
             </p>
             <div className="flex items-center justify-center gap-4 pt-4">
               <Button size="lg" className="bg-primary hover:bg-primary/90">
@@ -120,7 +120,7 @@ const Index = () => {
               </Button>
               <Button size="lg" variant="secondary">
                 <Brain className="mr-2 h-5 w-5" />
-                AI Insights
+                Analytics
               </Button>
             </div>
           </div>
@@ -212,12 +212,12 @@ const Index = () => {
               </div>
             </div>
 
-            {/* AI Insights */}
+            {/* Risk Analytics */}
             <div>
               <div className="flex items-center gap-3 mb-6">
                 <Brain className="h-6 w-6 text-accent" />
                 <h2 className="text-2xl font-bold text-foreground">
-                  AI-Powered Insights
+                  Risk Analytics & Insights
                 </h2>
               </div>
               <div className="space-y-4">
