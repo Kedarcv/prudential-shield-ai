@@ -3,6 +3,7 @@ import { RiskAlert } from "@/components/RiskAlert";
 import { AIInsightCard } from "@/components/AIInsightCard";
 import { ComplianceTracker } from "@/components/ComplianceTracker";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Activity,
   Shield,
@@ -11,12 +12,80 @@ import {
   AlertCircle,
   BarChart3,
   Brain,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 import heroBackground from "@/assets/hero-background.jpg";
+import { useDashboardMetrics, useAlerts, useAIInsights, useHealthCheck } from "@/hooks/useApi";
+import { useEffect, useState } from "react";
 
 const Index = () => {
+  const { data: dashboardData, loading: dashboardLoading, error: dashboardError } = useDashboardMetrics();
+  const { data: alertsData, loading: alertsLoading } = useAlerts({ status: 'active', limit: 10 });
+  const { data: aiInsights, loading: aiLoading } = useAIInsights();
+  const { isHealthy } = useHealthCheck();
+  
+  // Fallback data for when API is loading or fails
+  const fallbackMetrics = {
+    riskExposure: { value: '$2.4B', change: -3.2, status: 'healthy' as const },
+    capitalAdequacy: { value: '18.5%', change: 2.1, status: 'healthy' as const },
+    liquidityRatio: { value: '142%', change: -1.5, status: 'warning' as const },
+    creditQuality: { value: '94.2%', change: 0.8, status: 'healthy' as const },
+  };
+
+  const fallbackAlerts = [
+    {
+      _id: '1',
+      alertType: 'warning',
+      severity: 'medium',
+      title: 'Market volatility increased by 15% in tech sector holdings',
+      description: 'Market volatility increased by 15% in tech sector holdings',
+      triggeredAt: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
+      status: 'active'
+    },
+    {
+      _id: '2',
+      alertType: 'info',
+      severity: 'low',
+      title: 'Liquidity coverage ratio improved to 142%',
+      description: 'Liquidity coverage ratio improved to 142%',
+      triggeredAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+      status: 'active'
+    },
+    {
+      _id: '3',
+      alertType: 'breach',
+      severity: 'high',
+      title: 'Credit concentration limit approaching threshold (92%)',
+      description: 'Credit concentration limit approaching threshold (92%)',
+      triggeredAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+      status: 'active'
+    }
+  ];
+
+  // Use real data if available, otherwise fallback
+  const metrics = dashboardData?.keyMetrics || fallbackMetrics;
+  const alerts = alertsData?.alerts || fallbackAlerts;
+  const insights = aiInsights || [];
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Health Status Indicator */}
+      {!isHealthy && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <WifiOff className="h-5 w-5 text-yellow-400" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700">
+                Backend services are currently unavailable. Displaying cached data.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div
@@ -38,7 +107,7 @@ const Index = () => {
               </span>
             </div>
             <h1 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
-              RiskWise 2.0
+              Sentry 
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Strengthen resilience and regulatory alignment with AI-powered prudential
@@ -62,38 +131,51 @@ const Index = () => {
       <section className="container mx-auto px-6 py-12 space-y-8">
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <MetricCard
-            title="Risk Exposure"
-            value="$2.4B"
-            change={-3.2}
-            icon={TrendingDown}
-            trend="down"
-            status="healthy"
-          />
-          <MetricCard
-            title="Capital Adequacy"
-            value="18.5%"
-            change={2.1}
-            icon={Shield}
-            trend="up"
-            status="healthy"
-          />
-          <MetricCard
-            title="Liquidity Ratio"
-            value="142%"
-            change={-1.5}
-            icon={Activity}
-            trend="down"
-            status="warning"
-          />
-          <MetricCard
-            title="Credit Quality"
-            value="94.2%"
-            change={0.8}
-            icon={DollarSign}
-            trend="up"
-            status="healthy"
-          />
+          {dashboardLoading ? (
+            // Loading skeletons
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="p-6 rounded-lg border bg-card">
+                <Skeleton className="h-4 w-24 mb-4" />
+                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-4 w-20" />
+              </div>
+            ))
+          ) : (
+            <>
+              <MetricCard
+                title="Risk Exposure"
+                value={metrics.riskExposure?.value || "$2.4B"}
+                change={metrics.riskExposure?.change || -3.2}
+                icon={TrendingDown}
+                trend={metrics.riskExposure?.change > 0 ? "up" : "down"}
+                status={metrics.riskExposure?.status || "healthy"}
+              />
+              <MetricCard
+                title="Capital Adequacy"
+                value={metrics.capitalAdequacy?.value || "18.5%"}
+                change={metrics.capitalAdequacy?.change || 2.1}
+                icon={Shield}
+                trend={metrics.capitalAdequacy?.change > 0 ? "up" : "down"}
+                status={metrics.capitalAdequacy?.status || "healthy"}
+              />
+              <MetricCard
+                title="Liquidity Ratio"
+                value={metrics.liquidityRatio?.value || "142%"}
+                change={metrics.liquidityRatio?.change || -1.5}
+                icon={Activity}
+                trend={metrics.liquidityRatio?.change > 0 ? "up" : "down"}
+                status={metrics.liquidityRatio?.status || "warning"}
+              />
+              <MetricCard
+                title="Credit Quality"
+                value={metrics.creditQuality?.value || "94.2%"}
+                change={metrics.creditQuality?.change || 0.8}
+                icon={DollarSign}
+                trend={metrics.creditQuality?.change > 0 ? "up" : "down"}
+                status={metrics.creditQuality?.status || "healthy"}
+              />
+            </>
+          )}
         </div>
 
         {/* Two Column Layout */}
@@ -109,21 +191,24 @@ const Index = () => {
                 </h2>
               </div>
               <div className="space-y-3">
-                <RiskAlert
-                  level="medium"
-                  message="Market volatility increased by 15% in tech sector holdings"
-                  timestamp="2 minutes ago"
-                />
-                <RiskAlert
-                  level="low"
-                  message="Liquidity coverage ratio improved to 142%"
-                  timestamp="1 hour ago"
-                />
-                <RiskAlert
-                  level="high"
-                  message="Credit concentration limit approaching threshold (92%)"
-                  timestamp="3 hours ago"
-                />
+                {alertsLoading ? (
+                  // Loading skeletons for alerts
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="p-4 rounded-lg border bg-card">
+                      <Skeleton className="h-4 w-full mb-2" />
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                  ))
+                ) : (
+                  alerts.slice(0, 3).map((alert) => (
+                    <RiskAlert
+                      key={alert._id}
+                      level={alert.severity === "critical" ? "high" : alert.severity as "low" | "medium" | "high"}
+                      message={alert.title}
+                      timestamp={new Date(alert.triggeredAt).toLocaleString()}
+                    />
+                  ))
+                )}
               </div>
             </div>
 
@@ -136,24 +221,31 @@ const Index = () => {
                 </h2>
               </div>
               <div className="space-y-4">
-                <AIInsightCard
-                  title="Portfolio Rebalancing Opportunity"
-                  description="AI analysis suggests reducing exposure to high-volatility assets by 8% to optimize risk-adjusted returns"
-                  confidence={94}
-                  category="Optimization"
-                />
-                <AIInsightCard
-                  title="Emerging Credit Risk Pattern"
-                  description="Machine learning models detected early indicators of credit deterioration in SME loan portfolio"
-                  confidence={87}
-                  category="Prediction"
-                />
-                <AIInsightCard
-                  title="Regulatory Compliance Enhancement"
-                  description="Automated analysis recommends updates to stress testing scenarios based on recent market conditions"
-                  confidence={91}
-                  category="Compliance"
-                />
+                {aiLoading ? (
+                  // Loading skeletons for AI insights
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="p-5 rounded-lg border bg-card">
+                      <div className="flex items-start gap-4">
+                        <Skeleton className="w-11 h-11 rounded-lg" />
+                        <div className="flex-1">
+                          <Skeleton className="h-4 w-48 mb-2" />
+                          <Skeleton className="h-4 w-full mb-3" />
+                          <Skeleton className="h-4 w-24" />
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  insights.slice(0, 3).map((insight) => (
+                    <AIInsightCard
+                      key={insight.id}
+                      title={insight.title}
+                      description={insight.description}
+                      confidence={insight.confidence}
+                      category={insight.category}
+                    />
+                  ))
+                )}
               </div>
             </div>
           </div>

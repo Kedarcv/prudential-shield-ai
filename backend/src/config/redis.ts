@@ -24,9 +24,9 @@ export async function connectRedis(): Promise<void> {
       console.log('Redis connection ready');
     });
 
-  } catch (error) {
-    console.error('Failed to connect to Redis:', error);
-    throw error;
+  } catch (error: any) {
+    console.warn('⚠️ Redis connection failed, running without cache:', error.message);
+    // Don't throw error - allow server to run without Redis
   }
 }
 
@@ -43,28 +43,67 @@ export async function disconnectRedis(): Promise<void> {
 // Cache helper functions
 export const cache = {
   async set(key: string, value: any, expiry: number = 3600): Promise<void> {
-    await redisClient.setEx(key, expiry, JSON.stringify(value));
+    try {
+      if (redisClient.isReady) {
+        await redisClient.setEx(key, expiry, JSON.stringify(value));
+      }
+    } catch (error) {
+      console.warn('Cache set failed:', error);
+    }
   },
 
   async get(key: string): Promise<any> {
-    const value = await redisClient.get(key);
-    return value ? JSON.parse(value) : null;
+    try {
+      if (redisClient.isReady) {
+        const value = await redisClient.get(key);
+        return value ? JSON.parse(value) : null;
+      }
+    } catch (error) {
+      console.warn('Cache get failed:', error);
+    }
+    return null;
   },
 
   async del(key: string): Promise<void> {
-    await redisClient.del(key);
+    try {
+      if (redisClient.isReady) {
+        await redisClient.del(key);
+      }
+    } catch (error) {
+      console.warn('Cache del failed:', error);
+    }
   },
 
   async exists(key: string): Promise<boolean> {
-    return (await redisClient.exists(key)) === 1;
+    try {
+      if (redisClient.isReady) {
+        return (await redisClient.exists(key)) === 1;
+      }
+    } catch (error) {
+      console.warn('Cache exists failed:', error);
+    }
+    return false;
   },
 
   async setHash(key: string, field: string, value: any): Promise<void> {
-    await redisClient.hSet(key, field, JSON.stringify(value));
+    try {
+      if (redisClient.isReady) {
+        await redisClient.hSet(key, field, JSON.stringify(value));
+      }
+    } catch (error) {
+      console.warn('Cache setHash failed:', error);
+    }
   },
 
   async getHash(key: string, field: string): Promise<any> {
-    const value = await redisClient.hGet(key, field);
-    return value ? JSON.parse(value) : null;
+    try {
+      if (redisClient.isReady) {
+        const value = await redisClient.hGet(key, field);
+        return value ? JSON.parse(value) : null;
+      }
+    } catch (error) {
+      console.warn('Cache getHash failed:', error);
+    }
+    return null;
   }
 };

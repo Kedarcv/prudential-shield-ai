@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 export async function connectDatabase(): Promise<void> {
   try {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/riskwise';
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/Sentry';
     
     await mongoose.connect(mongoUri, {
       maxPoolSize: 10, // Maintain up to 10 socket connections

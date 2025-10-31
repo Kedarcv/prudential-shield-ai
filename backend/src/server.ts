@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -34,7 +35,12 @@ const schedulerService = new SchedulerService();
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: [
+    process.env.FRONTEND_URL || 'http://localhost:5173',
+    'http://localhost:8081',
+    'http://localhost:3000',
+    'http://localhost:5174'
+  ],
   credentials: true
 }));
 
@@ -112,7 +118,7 @@ async function startServer() {
     schedulerService.start();
     
     server.listen(PORT, () => {
-      console.log(`🚀 RiskWise 2.0 API Server running on port ${PORT}`);
+      console.log(`🚀 Sentry  API Server running on port ${PORT}`);
       console.log(`🔗 Health check: http://localhost:${PORT}/health`);
       console.log(`📊 WebSocket server running for real-time updates`);
     });

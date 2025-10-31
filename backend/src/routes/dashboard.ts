@@ -10,9 +10,11 @@ import {
 } from '../models/Risk';
 import { Portfolio, Customer, Transaction } from '../models/User';
 import { cache } from '../config/redis';
+import { AIInsightService } from '../services/AIInsightService';
 import moment from 'moment';
 
 const router = Router();
+const aiInsightService = AIInsightService.getInstance();
 
 /**
  * GET /api/dashboard/overview
@@ -271,7 +273,7 @@ router.post('/alerts/:id/acknowledge', catchAsync(async (req: AuthRequest, res: 
     });
   }
 
-  res.json({
+  return res.json({
     success: true,
     data: alert
   });
@@ -286,27 +288,70 @@ router.post('/alerts/:id/resolve', catchAsync(async (req: AuthRequest, res: Resp
   const userId = req.user?.id;
   const { resolution } = req.body;
 
-  const alert = await RiskAlert.findByIdAndUpdate(
-    alertId,
-    {
-      status: 'resolved',
-      resolvedAt: new Date(),
-      acknowledgedBy: userId,
-      ...(resolution && { actions: [...(alert?.actions || []), resolution] })
-    },
-    { new: true }
-  );
-
-  if (!alert) {
+  // First find the alert to get existing actions
+  const existingAlert = await RiskAlert.findById(alertId);
+  if (!existingAlert) {
     return res.status(404).json({
       success: false,
       error: 'Alert not found'
     });
   }
 
-  res.json({
+  const alert = await RiskAlert.findByIdAndUpdate(
+    alertId,
+    {
+      status: 'resolved',
+      resolvedAt: new Date(),
+      acknowledgedBy: userId,
+      ...(resolution && { actions: [...(existingAlert.actions || []), resolution] })
+    },
+    { new: true }
+  );
+
+  return res.json({
     success: true,
     data: alert
+  });
+}));
+
+/**
+ * GET /api/dashboard/ai-insights
+ * Get AI-powered insights for the dashboard
+ */
+router.get('/ai-insights', catchAsync(async (req: AuthRequest, res: Response) => {
+  const insights = await aiInsightService.generateDashboardInsights();
+  
+  res.json({
+    success: true,
+    data: insights
+  });
+}));
+
+/**
+ * GET /api/dashboard/ai-insights/portfolio/:id
+ * Get AI insights for a specific portfolio
+ */
+router.get('/ai-insights/portfolio/:id', catchAsync(async (req: AuthRequest, res: Response) => {
+  const portfolioId = req.params.id;
+  const insights = await aiInsightService.analyzePortfolio(portfolioId);
+  
+  res.json({
+    success: true,
+    data: insights
+  });
+}));
+
+/**
+ * GET /api/dashboard/ai-insights/credit-risk/:customerId
+ * Get AI credit risk prediction for a customer
+ */
+router.get('/ai-insights/credit-risk/:customerId', catchAsync(async (req: AuthRequest, res: Response) => {
+  const customerId = req.params.customerId;
+  const prediction = await aiInsightService.predictCreditRisk(customerId);
+  
+  res.json({
+    success: true,
+    data: prediction
   });
 }));
 

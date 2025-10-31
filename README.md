@@ -1,4 +1,4 @@
-# Prudential Risk-Based System Guide - RiskWise 2.0
+# Prudential Risk-Based System Guide - Sentry 2.0
 
 ## Table of Contents
 1. [System Overview](#system-overview)
@@ -14,7 +14,7 @@
 
 ## System Overview
 
-RiskWise 2.0 provides a comprehensive foundation for building a production-ready prudential risk-based system that meets international banking standards and regulatory requirements.
+Sentry 2.0 provides a comprehensive foundation for building a production-ready prudential risk-based system that meets international banking standards and regulatory requirements.
 
 ### Current System Capabilities
 - **AI-Powered Risk Assessment**: 92.09% accuracy fraud detection
@@ -223,7 +223,7 @@ interface ReportingService {
 version: '3.8'
 services:
   risk-engine:
-    image: riskwise/risk-engine:latest
+    image: Sentry/risk-engine:latest
     replicas: 3
     resources:
       limits:
@@ -235,14 +235,14 @@ services:
       - kafka
       
   monitoring-service:
-    image: riskwise/monitoring:latest
+    image: Sentry/monitoring:latest
     replicas: 2
     environment:
       - REAL_TIME_PROCESSING=true
       - ALERT_THRESHOLD_MS=5000
       
   reporting-service:
-    image: riskwise/reporting:latest
+    image: Sentry/reporting:latest
     volumes:
       - report-storage:/app/reports
     environment:
@@ -797,7 +797,7 @@ interface BusinessKPIs {
 
 ## Conclusion
 
-RiskWise 2.0 provides a solid foundation for building a world-class prudential risk management system. By leveraging its existing capabilities and following this comprehensive implementation guide, you can create a production-ready system that meets international banking standards and regulatory requirements.
+Sentry 2.0 provides a solid foundation for building a world-class prudential risk management system. By leveraging its existing capabilities and following this comprehensive implementation guide, you can create a production-ready system that meets international banking standards and regulatory requirements.
 
 ### Key Success Factors:
 1. **Phased Implementation**: Systematic rollout minimizes risk
@@ -810,4 +810,4 @@ The system will position your organization as a leader in risk management techno
 
 ---
 
-*This guide provides the roadmap for transforming RiskWise 2.0 into a comprehensive, production-ready prudential risk management system that meets the highest standards of banking technology and regulatory compliance.*
+*This guide provides the roadmap for transforming Sentry 2.0 into a comprehensive, production-ready prudential risk management system that meets the highest standards of banking technology and regulatory compliance.*
