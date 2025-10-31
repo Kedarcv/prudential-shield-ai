@@ -21,6 +21,7 @@ import complianceRoutes from './routes/compliance';
 import alertRoutes from './routes/alerts';
 import reportRoutes from './routes/reports';
 import userRoutes from './routes/users';
+import settingsRoutes from './routes/settings';
 
 import { RealTimeService } from './services/RealTimeService';
 import { SchedulerService } from './services/SchedulerService';
@@ -87,6 +88,7 @@ app.use('/api/compliance', authMiddleware, complianceRoutes);
 app.use('/api/alerts', authMiddleware, alertRoutes);
 app.use('/api/reports', authMiddleware, reportRoutes);
 app.use('/api/users', authMiddleware, userRoutes);
+app.use('/api/settings', authMiddleware, settingsRoutes);
 
 // WebSocket connection handler
 wss.on('connection', (ws) => {

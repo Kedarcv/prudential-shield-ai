@@ -19,7 +19,7 @@ router.get('/',
  * Get user statistics
  */
 router.get('/stats',
-  requireRole('admin'),
+  requireRole(['admin']),
   auditLog('view_user_stats'),
   UserController.getUserStats
 );
@@ -69,7 +69,7 @@ router.patch('/:id/status',
  * Delete user (soft delete)
  */
 router.delete('/:id',
-  requireRole('admin'),
+  requireRole(['admin']),
   auditLog('delete_user'),
   UserController.deleteUser
 );
@@ -79,7 +79,7 @@ router.delete('/:id',
  * Reset user password (admin only)
  */
 router.post('/:id/reset-password',
-  requireRole('admin'),
+  requireRole(['admin']),
   auditLog('reset_user_password'),
   UserController.resetPassword
 );
