@@ -17,6 +17,10 @@ import RiskManagerDashboard from "./pages/RiskManagerDashboard";
 import ComplianceDashboard from "./pages/ComplianceDashboard";
 import UserManagement from "./pages/UserManagement";
 import SystemSettings from "./pages/SystemSettings";
+import ProfilePage from "./pages/ProfilePage";
+import AIChat from "./pages/AIChat";
+import DataSources from "./pages/DataSources";
+import Reports from "./pages/Reports";
 
 // Hooks
 import { useAuth } from "./hooks/useApi";
@@ -54,14 +58,34 @@ const AppRoutes = () => {
             <ComplianceDashboard />
           </ProtectedRoute>
         } />
-        <Route path="users" element={
+        <Route path="admin/users" element={
           <ProtectedRoute requiredRole="admin">
             <UserManagement />
           </ProtectedRoute>
         } />
-        <Route path="settings" element={
+        <Route path="admin/settings" element={
           <ProtectedRoute requiredRole="admin">
             <SystemSettings />
+          </ProtectedRoute>
+        } />
+        <Route path="profile" element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        } />
+        <Route path="ai-chat" element={
+          <ProtectedRoute>
+            <AIChat />
+          </ProtectedRoute>
+        } />
+        <Route path="data-sources" element={
+          <ProtectedRoute requiredRole="admin">
+            <DataSources />
+          </ProtectedRoute>
+        } />
+        <Route path="reports" element={
+          <ProtectedRoute>
+            <Reports />
           </ProtectedRoute>
         } />
       </Route>

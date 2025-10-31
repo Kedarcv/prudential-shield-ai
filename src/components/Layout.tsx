@@ -26,7 +26,8 @@ import {
   LogOut,
   User,
   Wifi,
-  WifiOff
+  WifiOff,
+  Bot
 } from 'lucide-react';
 import { useAuth, useHealthCheck, useRealTimeMetrics } from '@/hooks/useApi';
 import { cn } from '@/lib/utils';
@@ -49,6 +50,8 @@ const Layout = () => {
         ...baseItems,
         { name: 'Admin Dashboard', href: '/admin', icon: Settings, current: location.pathname === '/admin' },
         { name: 'User Management', href: '/admin/users', icon: Users, current: location.pathname === '/admin/users' },
+        { name: 'Data Sources', href: '/data-sources', icon: Database, current: location.pathname === '/data-sources' },
+        { name: 'AI Chat', href: '/ai-chat', icon: Bot, current: location.pathname === '/ai-chat' },
         { name: 'System Settings', href: '/admin/settings', icon: Database, current: location.pathname === '/admin/settings' }
       ];
     }
@@ -173,11 +176,11 @@ const Layout = () => {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => window.location.href = '/profile'}>
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => window.location.href = '/admin/settings'}>
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>
