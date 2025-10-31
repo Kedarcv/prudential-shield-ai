@@ -11,7 +11,8 @@
     "test:watch": "jest --watch",
     "lint": "eslint src --ext .ts",
     "migrate": "tsx src/db/migrate.ts",
-    "seed": "tsx src/db/seed.ts"
+    "seed": "tsx src/db/seed.ts",
+    "seed:zimbabwe": "tsx src/db/seedZimbabwe.ts"
   },
   "dependencies": {
     "axios": "^1.6.2",

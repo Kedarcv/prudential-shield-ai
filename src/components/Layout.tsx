@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { useAuth, useHealthCheck, useRealTimeMetrics } from '@/hooks/useApi';
 import { cn } from '@/lib/utils';
+import AIFloatingWidget from './AIFloatingWidget';
 
 const Layout = () => {
   const { user, logout } = useAuth();
@@ -69,6 +70,7 @@ const Layout = () => {
       return [
         ...baseItems,
         { name: 'Compliance', href: '/compliance', icon: Shield, current: location.pathname === '/compliance' },
+        { name: 'SECZ Compliance', href: '/secz-compliance', icon: Shield, current: location.pathname === '/secz-compliance' },
         { name: 'Audit Reports', href: '/audit', icon: FileText, current: location.pathname === '/audit' }
       ];
     }
@@ -147,7 +149,12 @@ const Layout = () => {
               </Badge>
               
               {/* Active Alerts */}
-              <Button variant="ghost" size="sm" className="relative">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="relative"
+                onClick={() => window.location.href = '/risk#alerts'}
+              >
                 <Bell className="h-4 w-4" />
                 {realTimeData?.alerts?.critical > 0 && (
                   <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs">
@@ -199,6 +206,9 @@ const Layout = () => {
       <main className="flex-1">
         <Outlet />
       </main>
+
+      {/* AI Floating Widget */}
+      <AIFloatingWidget />
     </div>
   );
 };

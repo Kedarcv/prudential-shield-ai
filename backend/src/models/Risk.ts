@@ -103,16 +103,41 @@ export interface IRiskAlert extends Document {
 
 // Compliance Status Model
 export interface IComplianceStatus extends Document {
-  regulatoryFramework: 'basel_iii' | 'ifrs_9' | 'ccar' | 'rbz_requirements' | 'aml_cft';
+  regulatoryFramework: 'secz_aml_cft' | 'mlpc_act' | 'cft_act' | 'rbz_requirements' | 'bank_use_promotion' | 'companies_act';
   requirement: string;
   description: string;
-  status: 'compliant' | 'non_compliant' | 'partially_compliant' | 'under_review';
+  sectionReference: string; // Legal section/article reference
+  status: 'compliant' | 'non_compliant' | 'partially_compliant' | 'under_review' | 'not_applicable';
   completionPercentage: number;
   lastAssessment: Date;
   nextAssessment: Date;
   responsibleParty: string;
-  remedialActions: string[];
-  evidence: string[];
+  complianceOfficer: string;
+  remedialActions: {
+    action: string;
+    dueDate: Date;
+    status: 'pending' | 'in_progress' | 'completed';
+    assignedTo: string;
+  }[];
+  evidence: {
+    type: string;
+    description: string;
+    dateProvided: Date;
+    location: string;
+  }[];
+  riskOfNonCompliance: 'low' | 'medium' | 'high' | 'critical';
+  regulatoryDeadlines: {
+    deadline: Date;
+    description: string;
+    status: 'met' | 'pending' | 'overdue';
+  }[];
+  auditFindings: {
+    finding: string;
+    severity: 'low' | 'medium' | 'high';
+    dateIdentified: Date;
+    remediated: boolean;
+    remediationDate?: Date;
+  }[];
 }
 
 // Schema Definitions
@@ -220,22 +245,47 @@ const RiskAlertSchema = new Schema<IRiskAlert>({
 const ComplianceStatusSchema = new Schema<IComplianceStatus>({
   regulatoryFramework: { 
     type: String, 
-    enum: ['basel_iii', 'ifrs_9', 'ccar', 'rbz_requirements', 'aml_cft'], 
+    enum: ['secz_aml_cft', 'mlpc_act', 'cft_act', 'rbz_requirements', 'bank_use_promotion', 'companies_act'], 
     required: true 
   },
   requirement: { type: String, required: true },
   description: { type: String, required: true },
+  sectionReference: { type: String, required: true },
   status: { 
     type: String, 
-    enum: ['compliant', 'non_compliant', 'partially_compliant', 'under_review'], 
+    enum: ['compliant', 'non_compliant', 'partially_compliant', 'under_review', 'not_applicable'], 
     required: true 
   },
   completionPercentage: { type: Number, required: true, min: 0, max: 100 },
   lastAssessment: { type: Date, required: true },
   nextAssessment: { type: Date, required: true },
   responsibleParty: { type: String, required: true },
-  remedialActions: [{ type: String }],
-  evidence: [{ type: String }]
+  complianceOfficer: { type: String, required: true },
+  remedialActions: [{
+    action: { type: String, required: true },
+    dueDate: { type: Date, required: true },
+    status: { type: String, enum: ['pending', 'in_progress', 'completed'], default: 'pending' },
+    assignedTo: { type: String, required: true }
+  }],
+  evidence: [{
+    type: { type: String, required: true },
+    description: { type: String, required: true },
+    dateProvided: { type: Date, required: true },
+    location: { type: String, required: true }
+  }],
+  riskOfNonCompliance: { type: String, enum: ['low', 'medium', 'high', 'critical'], required: true },
+  regulatoryDeadlines: [{
+    deadline: { type: Date, required: true },
+    description: { type: String, required: true },
+    status: { type: String, enum: ['met', 'pending', 'overdue'], default: 'pending' }
+  }],
+  auditFindings: [{
+    finding: { type: String, required: true },
+    severity: { type: String, enum: ['low', 'medium', 'high'], required: true },
+    dateIdentified: { type: Date, required: true },
+    remediated: { type: Boolean, default: false },
+    remediationDate: { type: Date }
+  }]
 });
 
 // Indexes for performance

@@ -15,6 +15,7 @@ import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
 import RiskManagerDashboard from "./pages/RiskManagerDashboard";
 import ComplianceDashboard from "./pages/ComplianceDashboard";
+import SECZComplianceDashboard from "./pages/SECZComplianceDashboard";
 import UserManagement from "./pages/UserManagement";
 import SystemSettings from "./pages/SystemSettings";
 import ProfilePage from "./pages/ProfilePage";
@@ -56,6 +57,11 @@ const AppRoutes = () => {
         <Route path="compliance" element={
           <ProtectedRoute requiredRoles={["auditor", "admin"]}>
             <ComplianceDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="secz-compliance" element={
+          <ProtectedRoute requiredRoles={["auditor", "admin", "risk_manager"]}>
+            <SECZComplianceDashboard />
           </ProtectedRoute>
         } />
         <Route path="admin/users" element={

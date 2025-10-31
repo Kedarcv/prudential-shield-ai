@@ -247,7 +247,7 @@ export const indexPageConfig = {
 
 // Compliance Dashboard Configuration
 export const complianceConfig = {
-  // Compliance ratios
+  // SECZ AML/CFT Compliance Ratios
   ratios: {
     capitalAdequacy: {
       current: Number(import.meta.env.VITE_COMPLIANCE_CAPITAL_ADEQUACY) || 15.8,
@@ -264,7 +264,193 @@ export const complianceConfig = {
       required: Number(import.meta.env.VITE_COMPLIANCE_LEVERAGE_RATIO_REQ) || 3.0,
       target: Number(import.meta.env.VITE_COMPLIANCE_LEVERAGE_RATIO_TARGET) || 5.0
     }
+  },
+
+  // SECZ AML/CFT Compliance Metrics
+  secz: {
+    amlMetrics: {
+      sarSubmissionRate: Number(import.meta.env.VITE_SECZ_SAR_SUBMISSION_RATE) || 98.5,
+      ctrCompletionRate: Number(import.meta.env.VITE_SECZ_CTR_COMPLETION_RATE) || 99.2,
+      crossBorderReportingRate: Number(import.meta.env.VITE_SECZ_CBR_RATE) || 100.0,
+      pepScreeningCoverage: Number(import.meta.env.VITE_SECZ_PEP_COVERAGE) || 100.0,
+      sanctionsScreeningAccuracy: Number(import.meta.env.VITE_SECZ_SANCTIONS_ACCURACY) || 99.8
+    },
+    transactionMonitoring: {
+      realTimeMonitoringCoverage: Number(import.meta.env.VITE_SECZ_RT_MONITORING) || 100.0,
+      alertGenerationRate: Number(import.meta.env.VITE_SECZ_ALERT_RATE) || 2.3,
+      falsePositiveRate: Number(import.meta.env.VITE_SECZ_FALSE_POSITIVE) || 12.5,
+      investigationCompletionRate: Number(import.meta.env.VITE_SECZ_INVESTIGATION_RATE) || 96.8
+    },
+    customerDueDiligence: {
+      kycCompletionRate: Number(import.meta.env.VITE_SECZ_KYC_COMPLETION) || 99.1,
+      eddRequiredRate: Number(import.meta.env.VITE_SECZ_EDD_RATE) || 8.7,
+      customerRiskAssessmentCoverage: Number(import.meta.env.VITE_SECZ_RISK_ASSESSMENT) || 100.0,
+      documentVerificationRate: Number(import.meta.env.VITE_SECZ_DOC_VERIFICATION) || 98.9
+    }
   }
+};
+
+// SECZ-specific Dashboard Configuration
+export const seczDashboardConfig = {
+  // Transaction Thresholds (for display purposes)
+  thresholds: {
+    cashTransactionThreshold: Number(import.meta.env.VITE_SECZ_CTR_THRESHOLD) || 10000,
+    crossBorderThreshold: Number(import.meta.env.VITE_SECZ_CBR_THRESHOLD) || 5000,
+    largeTransactionThreshold: Number(import.meta.env.VITE_SECZ_LARGE_TX_THRESHOLD) || 50000,
+    aggregateMonthlyThreshold: Number(import.meta.env.VITE_SECZ_MONTHLY_THRESHOLD) || 100000
+  },
+
+  // Recent Activity (fallback data)
+  fallbackActivity: {
+    sars: [
+      {
+        sarId: 'SAR-2024-001',
+        customerName: 'Corporate Client A',
+        reportType: 'suspicious_transaction',
+        amountInvolved: 25000,
+        status: 'submitted',
+        dateCreated: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        sarId: 'SAR-2024-002',
+        customerName: 'Individual Client B',
+        reportType: 'suspicious_activity',
+        amountInvolved: 15000,
+        status: 'under_investigation',
+        dateCreated: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        sarId: 'SAR-2024-003',
+        customerName: 'Corporate Client C',
+        reportType: 'cft_related',
+        amountInvolved: 100000,
+        status: 'acknowledged',
+        dateCreated: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+      }
+    ],
+    ctrs: [
+      {
+        ctrId: 'CTR-2024-045',
+        customerName: 'Cash Intensive Business Ltd',
+        transactionAmount: 12000,
+        transactionType: 'deposit',
+        currency: 'USD',
+        dateReported: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        ctrId: 'CTR-2024-046',
+        customerName: 'Import Export Co.',
+        transactionAmount: 15500,
+        transactionType: 'withdrawal',
+        currency: 'USD',
+        dateReported: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        ctrId: 'CTR-2024-047',
+        customerName: 'Mining Operations PVT',
+        transactionAmount: 22000,
+        transactionType: 'exchange',
+        currency: 'ZWL',
+        dateReported: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString()
+      }
+    ],
+    crossBorderReports: [
+      {
+        reportId: 'CBR-2024-089',
+        senderCountry: 'Zimbabwe',
+        beneficiaryCountry: 'South Africa',
+        amount: 8500,
+        currency: 'USD',
+        status: 'approved',
+        dateReported: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        reportId: 'CBR-2024-090',
+        senderCountry: 'Botswana',
+        beneficiaryCountry: 'Zimbabwe',
+        amount: 6200,
+        currency: 'USD',
+        status: 'submitted',
+        dateReported: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+      }
+    ]
+  },
+
+  // Regulatory Framework Status
+  regulatoryFrameworks: [
+    {
+      id: 'secz_aml_cft',
+      name: 'SECZ AML/CFT Framework',
+      status: 'compliant',
+      completionRate: 98.5,
+      lastAssessment: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      nextAssessment: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
+      requirements: 25,
+      compliantRequirements: 24
+    },
+    {
+      id: 'mlpc_act',
+      name: 'MLPC Act Compliance',
+      status: 'compliant',
+      completionRate: 96.8,
+      lastAssessment: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+      nextAssessment: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString(),
+      requirements: 31,
+      compliantRequirements: 30
+    },
+    {
+      id: 'cft_act',
+      name: 'CFT Act Compliance',
+      status: 'partially_compliant',
+      completionRate: 92.3,
+      lastAssessment: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
+      nextAssessment: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+      requirements: 13,
+      compliantRequirements: 12
+    },
+    {
+      id: 'rbz_requirements',
+      name: 'RBZ Risk-Based Framework',
+      status: 'compliant',
+      completionRate: 99.1,
+      lastAssessment: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+      nextAssessment: new Date(Date.now() + 75 * 24 * 60 * 60 * 1000).toISOString(),
+      requirements: 18,
+      compliantRequirements: 18
+    }
+  ],
+
+  // High-Risk Indicators
+  riskIndicators: [
+    {
+      indicator: 'PEP Transactions',
+      currentValue: 15,
+      threshold: 20,
+      status: 'normal',
+      trend: 'stable'
+    },
+    {
+      indicator: 'Sanctions Matches',
+      currentValue: 0,
+      threshold: 1,
+      status: 'healthy',
+      trend: 'stable'
+    },
+    {
+      indicator: 'Cross-Border Transactions',
+      currentValue: 234,
+      threshold: 300,
+      status: 'normal',
+      trend: 'increasing'
+    },
+    {
+      indicator: 'Structuring Patterns',
+      currentValue: 3,
+      threshold: 5,
+      status: 'warning',
+      trend: 'increasing'
+    }
+  ]
 };
 
 // Loading states configuration
